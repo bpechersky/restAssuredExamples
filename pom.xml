@@ -28,7 +28,7 @@
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
         <maven-enforcer.version>3.5.0</maven-enforcer.version>
-        <java-release.version>17</java-release.version>
+        <java-release.version>24</java-release.version>
         <suite-xml>test-suite/testng.xml</suite-xml>
     </properties>
 
@@ -121,11 +121,6 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven-compiler-plugin.version}</version>
-                    <configuration>
-                        <release>${java-release.version}</release>
-                        <encoding>UTF-8</encoding>
-                        <forceJavacCompilerUse>true</forceJavacCompilerUse>
-                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -148,11 +143,11 @@
                         </argLine>
                     </configuration>
                     <dependencies>
-                        <dependency>
-                            <groupId>org.aspectj</groupId>
-                            <artifactId>aspectjweaver</artifactId>
-                            <version>${aspectj.version}</version>
-                        </dependency>
+<!--                        <dependency>-->
+<!--                            <groupId>org.aspectj</groupId>-->
+<!--                            <artifactId>aspectjweaver</artifactId>-->
+<!--                            <version>${aspectj.version}</version>-->
+<!--                        </dependency>-->
                     </dependencies>
                 </plugin>
                 <plugin>
@@ -189,5 +184,15 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>16</source>
+                    <target>16</target>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 </project>

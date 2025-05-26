@@ -18,7 +18,7 @@ package in.reqres;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
-import data.restfulbooker.UserData;
+import data.reqres.UserData;
 import io.qameta.allure.Description;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
