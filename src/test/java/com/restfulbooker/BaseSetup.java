@@ -20,7 +20,7 @@ public class BaseSetup {
     public void setup () {
 
         RequestSpecification requestSpecification = new RequestSpecBuilder ().setBaseUri (
-                "http://localhost:3001")
+                "http://localhost:8080")
             .addHeader ("Content-Type", "application/json")
             .addHeader ("Accept", "application/json")
             .addFilter (new RequestLoggingFilter ())

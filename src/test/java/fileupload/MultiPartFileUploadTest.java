@@ -45,7 +45,7 @@ public class MultiPartFileUploadTest {
             .all ()
             .and ()
             .assertThat ()
-            .body ("files", hasKey (fileName), "files.'calc.csv'", is (notNullValue ()));
+            .body ("__files/files", hasKey (fileName), "files.'calc.csv'", is (notNullValue ()));
 
     }
 }

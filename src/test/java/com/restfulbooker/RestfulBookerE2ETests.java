@@ -18,8 +18,16 @@ import io.qameta.allure.Severity;
 import io.qameta.allure.SeverityLevel;
 import io.qameta.allure.Step;
 import io.qameta.allure.Story;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+
+import java.io.IOException;
 
 /**
  * Created By Faisal Khatri on 18-02-2022
@@ -27,7 +35,28 @@ import org.testng.annotations.Test;
 @Epic("Rest Assured POC - Example Tests")
 @Feature("Writing End to End tests using rest-assured")
 public class RestfulBookerE2ETests extends BaseSetup {
+    private WireMockServer wireMockServer;
 
+    @BeforeClass
+    public void setUp() {
+        wireMockServer = new WireMockServer(WireMockConfiguration.options().port(8080));
+        wireMockServer.start();
+
+        configureFor("localhost", 8080);
+
+        stubFor(get(urlEqualTo("/api/booking"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"message\":\"Booking fetched successfully\"}")));
+    }
+
+    @AfterClass
+    public void tearDown() {
+        if (wireMockServer != null) {
+            wireMockServer.stop();
+        }
+    }
     private BookingData newBooking;
     private int bookingId;
     private String token;
@@ -36,12 +65,26 @@ public class RestfulBookerE2ETests extends BaseSetup {
     public void testSetup() {
         newBooking = getBookingData();
     }
+
     @Test
     @Description("Example test for creating new booking - Post request")
     @Severity(SeverityLevel.BLOCKER)
     @Story("End to End tests using rest-assured")
     @Step("Create new booking")
-    public void createBookingTest() {
+    public void createBookingTest() throws IOException {
+
+
+
+
+
+        given()
+                .when()
+                .post("http://localhost:8080/booking")
+                .then()
+                .log().all()
+                .statusCode(200)
+                .body("bookingid", notNullValue());
+
         bookingId = given().body(newBooking)
                 .when()
                 .post("/booking")
@@ -58,6 +101,26 @@ public class RestfulBookerE2ETests extends BaseSetup {
                                 .getCheckout()), "booking.additionalneeds", equalTo(newBooking.getAdditionalneeds()))
                 .extract()
                 .path("bookingid");
+
+
+
+        given()
+                .when()
+                .post("http://localhost:8080/booking")
+                .then()
+                .log().all()
+                .statusCode(200)
+                .body("bookingid", notNullValue());
+
+        bookingId = given().body(newBooking)
+                .when()
+                .post("/booking")
+                .then()
+                .log().all() // <-- add this
+                .statusCode(200)
+                .body("bookingid", notNullValue())
+                .extract().path("bookingid");
+
     }
 
     @Test
