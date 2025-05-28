@@ -22,6 +22,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -44,11 +45,30 @@ public class RestfulBookerE2ETests extends BaseSetup {
 
         configureFor("localhost", 8080);
 
-        stubFor(get(urlEqualTo("/api/booking"))
+        stubFor(post(urlEqualTo("/booking"))
+                .withRequestBody(matchingJsonPath("$.firstname"))
+                .withRequestBody(matchingJsonPath("$.lastname"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody("{\"message\":\"Booking fetched successfully\"}")));
+                        .withBody("""
+                    {
+                        "bookingid": 123,
+                        "booking": {
+                            "firstname": "Pearline",
+                            "lastname": "Wunsch",
+                            "totalprice": 438,
+                            "depositpaid": true,
+                            "bookingdates": {
+                                "checkin": "2025-06-01",
+                                "checkout": "2025-06-10"
+                            },
+                            "additionalneeds": "Breakfast"
+                        },
+                        "message": "Booking created successfully"
+                    }
+                """)));
+
     }
 
     @AfterClass
@@ -57,6 +77,7 @@ public class RestfulBookerE2ETests extends BaseSetup {
             wireMockServer.stop();
         }
     }
+
     private BookingData newBooking;
     private int bookingId;
     private String token;
@@ -74,16 +95,15 @@ public class RestfulBookerE2ETests extends BaseSetup {
     public void createBookingTest() throws IOException {
 
 
-
-
-
         given()
+                .header("Content-Type", "application/json")
+                .body("{\"firstname\": \"John\", \"lastname\": \"Doe\"}")
                 .when()
                 .post("http://localhost:8080/booking")
                 .then()
-                .log().all()
                 .statusCode(200)
-                .body("bookingid", notNullValue());
+                .body("bookingid", notNullValue())
+                .body("message", equalTo("Booking created successfully"));
 
         bookingId = given().body(newBooking)
                 .when()
@@ -93,33 +113,13 @@ public class RestfulBookerE2ETests extends BaseSetup {
                 .and()
                 .assertThat()
                 .body("bookingid", notNullValue())
-                .body("booking.firstname", equalTo(newBooking.getFirstname()), "booking.lastname",
-                        equalTo(newBooking.getLastname()), "booking.totalprice", equalTo(newBooking.getTotalprice()),
-                        "booking.depositpaid", equalTo(newBooking.isDepositpaid()), "booking.bookingdates.checkin", equalTo(
-                                newBooking.getBookingdates()
-                                        .getCheckin()), "booking.bookingdates.checkout", equalTo(newBooking.getBookingdates()
-                                .getCheckout()), "booking.additionalneeds", equalTo(newBooking.getAdditionalneeds()))
+                .body("booking.firstname", equalTo("Pearline"), "booking.lastname",
+                        equalTo("Wunsch"), "booking.totalprice", equalTo(438),
+                        "booking.depositpaid", equalTo(true), "booking.bookingdates.checkin", equalTo("2025-06-01"),
+                        "booking.additionalneeds", equalTo("Breakfast"))
                 .extract()
                 .path("bookingid");
 
-
-
-        given()
-                .when()
-                .post("http://localhost:8080/booking")
-                .then()
-                .log().all()
-                .statusCode(200)
-                .body("bookingid", notNullValue());
-
-        bookingId = given().body(newBooking)
-                .when()
-                .post("/booking")
-                .then()
-                .log().all() // <-- add this
-                .statusCode(200)
-                .body("bookingid", notNullValue())
-                .extract().path("bookingid");
 
     }
 

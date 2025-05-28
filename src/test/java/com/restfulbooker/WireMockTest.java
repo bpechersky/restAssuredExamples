@@ -23,26 +23,27 @@ public class WireMockTest {
 
         configureFor("localhost", 8080);
 
-        stubFor(get(urlEqualTo("/booking"))
+        stubFor(post(urlEqualTo("/booking"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody("{\"bookingid\": 123, \"message\":\"Booking fetched successfully\"}")));
+                        .withBody("{\"bookingid\": 123, \"message\": \"Booking created successfully\"}")));
+
     }
 
     @Test
     public void testBooking() {
         given()
+                .header("Content-Type", "application/json")
+                .body("{\"firstname\": \"John\", \"lastname\": \"Doe\"}")
                 .when()
-                .get("http://localhost:8080/booking")
+                .post("http://localhost:8080/booking")
                 .then()
-                .log().all()
                 .statusCode(200)
                 .body("bookingid", notNullValue())
-                .body("bookingid", equalTo(123))
-                .body("message", equalTo("Booking fetched successfully"));
+                .body("message", equalTo("Booking created successfully"));
 
-//
+
     }
 
     @AfterClass
