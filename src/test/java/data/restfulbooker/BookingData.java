@@ -8,7 +8,6 @@ import lombok.Data;
  * Created By Faisal Khatri on 18-02-2022
  */
 @Data
-@Getter
 @Builder
 public class BookingData {
     private String       firstname;

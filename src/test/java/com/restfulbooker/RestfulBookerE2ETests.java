@@ -129,12 +129,20 @@ public class RestfulBookerE2ETests extends BaseSetup {
     @Story("End to End tests using rest-assured")
     @Step("Get a the newly created booking")
     public void getBookingTest() {
+
+        stubFor(get(urlEqualTo("/booking/0"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{ \"id\": 0, \"firstname\": \"John\" }")));
+
         given().get("/booking/" + bookingId)
                 .then()
                 .statusCode(200)
                 .and()
                 .assertThat()
-                .body("firstname", equalTo(newBooking.getFirstname()), "lastname", equalTo(newBooking.getLastname()),
+                .body("firstname", equalTo(newBooking.getFirstname()),
+                        "lastname", equalTo(newBooking.getLastname()),
                         "totalprice", equalTo(newBooking.getTotalprice()), "depositpaid",
                         equalTo(newBooking.isDepositpaid()), "bookingdates.checkin", equalTo(newBooking.getBookingdates()
                                 .getCheckin()), "bookingdates.checkout", equalTo(newBooking.getBookingdates()
