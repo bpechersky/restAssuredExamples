@@ -91,8 +91,7 @@ public class RestfulBookerWireMockTest {
     public void createBookingTest() throws IOException {
 
 
-        WireMockServer wireMockServer = new WireMockServer(WireMockConfiguration.options().port(8080));
-        wireMockServer.start();
+
 
 
         given()
