@@ -176,6 +176,24 @@ public class RestfulBookerE2ETests extends BaseSetup {
     @Step("Update the booking")
     public void updateBookingTest() {
         BookingData updatedBooking = getBookingData();
+
+        stubFor(put(urlEqualTo("/booking/0"))
+                .withHeader("Cookie", containing("token=")) // Optional: match token presence
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\n" +
+                                "  \"firstname\": \"" + updatedBooking.getFirstname() + "\",\n" +
+                                "  \"lastname\": \"" + updatedBooking.getLastname() + "\",\n" +
+                                "  \"totalprice\": " + updatedBooking.getTotalprice() + ",\n" +
+                                "  \"depositpaid\": " + updatedBooking.isDepositpaid() + ",\n" +
+                                "  \"bookingdates\": {\n" +
+                                "    \"checkin\": \"" + updatedBooking.getBookingdates().getCheckin() + "\",\n" +
+                                "    \"checkout\": \"" + updatedBooking.getBookingdates().getCheckout() + "\"\n" +
+                                "  },\n" +
+                                "  \"additionalneeds\": \"" + updatedBooking.getAdditionalneeds() + "\"\n" +
+                                "}")));
+
         given().body(updatedBooking)
                 .when()
                 .header("Cookie", "token=" + token)
