@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import data.restfulbooker.*;
 import io.qameta.allure.Description;
 import io.qameta.allure.Epic;
@@ -217,6 +218,25 @@ public class RestfulBookerE2ETests extends BaseSetup {
     @Step("Update the booking partially")
     public void updatePartialBookingTest() {
         PartialBookingData partialUpdateBooking = getPartialBookingData();
+        stubFor(patch(urlEqualTo("/booking/0"))
+                .withHeader("Content-Type", WireMock.equalTo("application/json"))
+                .withRequestBody(matchingJsonPath("$.firstname"))
+                .withRequestBody(matchingJsonPath("$.totalprice"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\n" +
+                                "  \"firstname\": \"" + partialUpdateBooking.getFirstname() + "\",\n" +
+                                "  \"lastname\": \"SomeLastName\",  \n" + // keep or omit as needed
+                                "  \"totalprice\": " + partialUpdateBooking.getTotalprice() + ",\n" +
+                                "  \"depositpaid\": true,\n" +
+                                "  \"bookingdates\": {\n" +
+                                "    \"checkin\": \"2024-01-01\",\n" +
+                                "    \"checkout\": \"2024-01-10\"\n" +
+                                "  },\n" +
+                                "  \"additionalneeds\": \"Breakfast\"\n" +
+                                "}")));
+
         given().body(partialUpdateBooking)
                 .when()
                 .header("Cookie", "token=" + token)
