@@ -8,9 +8,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
-import data.restfulbooker.BookingData;
-import data.restfulbooker.PartialBookingData;
-import data.restfulbooker.Tokencreds;
+import data.restfulbooker.*;
 import io.qameta.allure.Description;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
@@ -44,6 +42,10 @@ public class RestfulBookerE2ETests extends BaseSetup {
         wireMockServer.start();
 
         configureFor("localhost", 8080);
+
+        newBooking = BookingDataBuilder.getBookingData();
+        dates = newBooking.getBookingdates();
+        bookingId = 0;
 
         stubFor(post(urlEqualTo("/booking"))
                 .withRequestBody(matchingJsonPath("$.firstname"))
@@ -79,12 +81,14 @@ public class RestfulBookerE2ETests extends BaseSetup {
     }
 
     private BookingData newBooking;
-    private int bookingId;
     private String token;
+    private static BookingDates dates;
+    private static int bookingId;
 
     @BeforeTest
     public void testSetup() {
         newBooking = getBookingData();
+
     }
 
     @Test
@@ -130,23 +134,38 @@ public class RestfulBookerE2ETests extends BaseSetup {
     @Step("Get a the newly created booking")
     public void getBookingTest() {
 
-        stubFor(get(urlEqualTo("/booking/0"))
+        stubFor(get(urlEqualTo("/booking/" + bookingId))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody("{ \"id\": 0, \"firstname\": \"John\" }")));
+                        .withBody("{\n" +
+                                "  \"bookingid\": 0,\n" +
+                                "  \"booking\": {\n" +
+                                "    \"firstname\": \"" + newBooking.getFirstname() + "\",\n" +
+                                "    \"lastname\": \"" + newBooking.getLastname() + "\",\n" +
+                                "    \"totalprice\": " + newBooking.getTotalprice() + ",\n" +
+                                "    \"depositpaid\": " + newBooking.isDepositpaid() + ",\n" +
+                                "    \"bookingdates\": {\n" +
+                                "      \"checkin\": \"" + dates.getCheckin() + "\",\n" +
+                                "      \"checkout\": \"" + dates.getCheckout() + "\"\n" +
+                                "    },\n" +
+                                "    \"additionalneeds\": \"" + newBooking.getAdditionalneeds() + "\"\n" +
+                                "  }\n" +
+                                "}")));
 
         given().get("/booking/" + bookingId)
                 .then()
                 .statusCode(200)
                 .and()
                 .assertThat()
-                .body("firstname", equalTo(newBooking.getFirstname()),
-                        "lastname", equalTo(newBooking.getLastname()),
-                        "totalprice", equalTo(newBooking.getTotalprice()), "depositpaid",
-                        equalTo(newBooking.isDepositpaid()), "bookingdates.checkin", equalTo(newBooking.getBookingdates()
-                                .getCheckin()), "bookingdates.checkout", equalTo(newBooking.getBookingdates()
-                                .getCheckout()), "additionalneeds", equalTo(newBooking.getAdditionalneeds()));
+                .body("booking.firstname", equalTo(newBooking.getFirstname()))
+                .body("booking.lastname", equalTo(newBooking.getLastname()))
+                .body("booking.totalprice", equalTo(newBooking.getTotalprice()))
+                .body("booking.depositpaid", equalTo(newBooking.isDepositpaid()))
+                .body("booking.bookingdates.checkin", equalTo(newBooking.getBookingdates().getCheckin()))
+                .body("booking.bookingdates.checkout", equalTo(newBooking.getBookingdates().getCheckout()))
+                .body("booking.additionalneeds", equalTo(newBooking.getAdditionalneeds()));
+        System.out.println("pause");
 
     }
 
