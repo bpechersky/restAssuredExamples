@@ -256,6 +256,12 @@ public class RestfulBookerE2ETests extends BaseSetup {
     @Story("End to End tests using rest-assured")
     @Step("Delete the booking")
     public void deleteBookingTest() {
+
+        stubFor(delete(urlEqualTo("/booking/0"))
+                .withHeader("Cookie",WireMock.equalTo("token=" + token))
+                .willReturn(aResponse()
+                        .withStatus(201))); // or 200 depending on your API spec
+
         given().header("Cookie", "token=" + token)
                 .when()
                 .delete("/booking/" + bookingId)
@@ -281,6 +287,15 @@ public class RestfulBookerE2ETests extends BaseSetup {
     @Test
     public void testTokenGeneration() {
         Tokencreds tokenCreds = getToken();
+
+        stubFor(post(urlEqualTo("/auth"))
+                .withHeader("Content-Type", WireMock.equalTo("application/json"))
+                .withRequestBody(equalToJson("{\"username\":\"admin\",\"password\":\"password123\"}"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"token\": \"abc123\"}")));
+
         token = given().body(tokenCreds)
                 .when()
                 .post("/auth")
