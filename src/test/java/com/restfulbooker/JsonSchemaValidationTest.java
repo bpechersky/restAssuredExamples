@@ -1,15 +1,22 @@
 package com.restfulbooker;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static data.restfulbooker.BookingDataBuilder.getBookingData;
 import static data.restfulbooker.BookingDataBuilder.getPartialBookingData;
 import static data.restfulbooker.TokenBuilder.getToken;
 import static io.restassured.RestAssured.given;
 
+import data.restfulbooker.*;
+import org.testng.annotations.BeforeClass;
+
+
 import java.io.InputStream;
 
-import data.restfulbooker.BookingData;
-import data.restfulbooker.PartialBookingData;
-import data.restfulbooker.Tokencreds;
+
+
+import  com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+
 import io.qameta.allure.Description;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
@@ -25,15 +32,59 @@ import org.testng.annotations.Test;
  **/
 @Epic("Rest Assured POC - Example Tests")
 @Feature("JSON Schema Validation using rest-assured")
-public class JsonSchemaValidationTest extends BaseSetup {
 
+
+public class JsonSchemaValidationTest extends BaseSetup {
     private int bookingId;
+    private BookingData newBooking; // 🔧 ADD THIS
+    private BookingDates dates; // 🔧 ADD THIS (adjust type if needed)
+    private WireMockServer wireMockServer;
+
+    @BeforeClass
+    public void setUp() {
+        wireMockServer = new WireMockServer(WireMockConfiguration.options().port(8080));
+        wireMockServer.start();
+
+        configureFor("localhost", 8080);
+
+        wireMockServer.stubFor(post(urlEqualTo("/booking"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("""
+      {
+        "bookingid": 123,
+        "booking": {
+          "firstname": "John",
+          "lastname": "Doe",
+          "totalprice": 100,
+          "depositpaid": true,
+          "bookingdates": {
+            "checkin": "2025-05-23",
+            "checkout": "2025-05-30"
+          },
+          "additionalneeds": "Breakfast"
+        }
+      }
+      """)));
+
+
+        // Initialize data for use in tests
+        newBooking = BookingDataBuilder.getBookingData();
+        dates = newBooking.getBookingdates();
+        bookingId = 123; // should match stub
+
+
+
+    }
 
     @Test
     @Description("Example test for checking json schema for new booking - Post request")
     @Severity(SeverityLevel.CRITICAL)
     @Story("JSON Schema Validation using rest-assured")
     public void testCreateBookingJsonSchema() {
+
+
 
         InputStream createBookingJsonSchema = getClass().getClassLoader()
                 .getResourceAsStream("createbookingjsonschema.json");
